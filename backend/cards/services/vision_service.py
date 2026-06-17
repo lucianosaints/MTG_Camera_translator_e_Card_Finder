@@ -64,7 +64,7 @@ class VisionService:
 
     def __init__(self):
         self.api_key: str = settings.OPENROUTER_API_KEY
-        self.model: str = 'openrouter/free'  # Forçando modelo gratuito para evitar custos
+        self.model: str = 'google/gemini-2.0-flash-lite-preview-02-05'  # Modelo de baixo custo e alta performance
 
         if not self.api_key:
             logger.error('OPENROUTER_API_KEY não configurada no .env')
@@ -220,19 +220,15 @@ class VisionService:
                 {
                     'role': 'user',
                     'content': (
-                        "Translate the following Magic: The Gathering Oracle text into Portuguese (Brazil) "
-                        "using official game terminology (e.g. 'Haste' -> 'Ímpeto', 'Trample' -> 'Atropelar', 'Graveyard' -> 'Cemitério').\n\n"
-                        "CRITICAL INSTRUCTIONS:\n"
-                        "- Respond ONLY with the final Portuguese translation.\n"
-                        "- DO NOT repeat the original text.\n"
-                        "- DO NOT add any prefixes, quotes, explanations, or comments.\n"
-                        "- DO NOT write 'Translation:' or 'Original:'.\n\n"
-                        f"Text to translate:\n{text}"
+                        "Translate this Magic: The Gathering card text to Portuguese.\n"
+                        "Return ONLY the direct translation, nothing else.\n\n"
+                        f"TEXT:\n{text}\n\n"
+                        "TRANSLATION:"
                     )
                 }
             ],
-            'max_tokens': 600,
-            'temperature': 0.1,
+            'max_tokens': 400,
+            'temperature': 0.0,
         }
 
         headers = {
@@ -248,7 +244,7 @@ class VisionService:
                 self.API_URL,
                 json=payload,
                 headers=headers,
-                timeout=REQUEST_TIMEOUT,
+                timeout=(10, 45),  # Aumentando o timeout para modelos mais lentos
             )
             response.raise_for_status()
 
@@ -260,6 +256,13 @@ class VisionService:
                 .strip()
             )
             
+            # Remove blocos de pensamento ocultos (como os do modelo DeepSeek-R1)
+            import re
+            translation = re.sub(r'<think>.*?</think>', '', translation, flags=re.DOTALL).strip()
+            
+            # Remover possíveis prefixos indesejados da IA
+            translation = re.sub(r'^(Aqui está a tradução|Tradução|Here is the translation|Translation):', '', translation, flags=re.IGNORECASE).strip()
+
             # Remover aspas se a IA insistir em colocar
             if translation.startswith('"') and translation.endswith('"'):
                 translation = translation[1:-1]
