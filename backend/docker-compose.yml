@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mtg_backend_app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Opcional: Montar banco SQLite local para persistir dados entre reboots
+      - ./db.sqlite3:/app/db.sqlite3
+    restart: unless-stopped
