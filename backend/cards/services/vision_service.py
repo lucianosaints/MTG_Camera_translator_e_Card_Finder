@@ -64,7 +64,7 @@ class VisionService:
 
     def __init__(self):
         self.api_key: str = settings.OPENROUTER_API_KEY
-        self.model: str = 'google/gemini-2.0-flash-lite-preview-02-05'  # Modelo de baixo custo e alta performance
+        self.model: str = getattr(settings, 'OPENROUTER_MODEL', 'google/gemini-2.0-flash-001')
 
         if not self.api_key:
             logger.error('OPENROUTER_API_KEY não configurada no .env')
