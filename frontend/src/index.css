@@ -1,0 +1,650 @@
+/* ============================================
+   MTG Camera Translator & Card Finder
+   Design System — Tema Escuro Premium
+   Inspirado nas cores de Magic: The Gathering
+   ============================================ */
+
+/* ── Google Fonts (Estilo MTG Clássico) ── */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap');
+
+/* ── CSS Custom Properties (Design Tokens) ── */
+:root {
+  /* Cores Primárias — Paleta MTG */
+  --color-bg-primary: #0a0a0f;
+  --color-bg-secondary: #12121a;
+  --color-bg-card: rgba(20, 20, 35, 0.85);
+  --color-bg-glass: rgba(255, 255, 255, 0.04);
+  --color-bg-glass-hover: rgba(255, 255, 255, 0.08);
+
+  /* Acentos — Inspirados nos tipos de mana */
+  --color-gold: #d4a843;
+  --color-gold-light: #f0d060;
+  --color-gold-glow: rgba(212, 168, 67, 0.3);
+  --color-purple: #9b59b6;
+  --color-purple-light: #c084fc;
+  --color-purple-glow: rgba(155, 89, 182, 0.25);
+  --color-blue: #3498db;
+  --color-red: #e74c3c;
+  --color-green: #2ecc71;
+  --color-white-mana: #f5f0e1;
+
+  /* Texto */
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #8a8a9e;
+  --color-text-muted: #55556a;
+  --color-text-accent: var(--color-gold);
+
+  /* Bordas */
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(212, 168, 67, 0.3);
+
+  /* Status */
+  --color-success: #2ecc71;
+  --color-error: #e74c3c;
+  --color-warning: #f39c12;
+
+  /* Tipografia (Tema MTG) */
+  --font-body: 'EB Garamond', Georgia, serif;
+  --font-display: 'Cinzel Decorative', serif;
+
+  /* Espaçamento */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 30px var(--color-gold-glow);
+  --shadow-purple-glow: 0 0 30px var(--color-purple-glow);
+
+  /* Transições */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+/* ── Reset & Base ── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  /* Imagem de Fundo Premium */
+  background-image: url('./imagem/Magic_the_gathering-card_back.jpg');
+  background-size: contain;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-color: var(--color-bg-primary); /* Fallback */
+}
+
+/* ── Background com Efeito Glass Premium ── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Escurecimento e Desfoque (Glassmorphism) */
+  background: rgba(10, 10, 15, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Tipografia ── */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+/* ── App Layout ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--space-lg);
+}
+
+/* ── Header ── */
+.app-header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.app-header__icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-sm);
+  filter: drop-shadow(0 0 10px var(--color-gold-glow));
+}
+
+.app-header__title {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold), var(--color-purple-light));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: var(--space-xs);
+}
+
+.app-header__subtitle {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  font-weight: 300;
+}
+
+/* ── Glass Card ── */
+.glass-card {
+  background: var(--color-bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-md);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+  width: 100%;
+  max-width: 480px;
+}
+
+.glass-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Camera Capture ── */
+.camera-capture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.camera-capture__dropzone {
+  width: 100%;
+  min-height: 220px;
+  border: 2px dashed rgba(212, 168, 67, 0.25);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  background: var(--color-bg-glass);
+  position: relative;
+  overflow: hidden;
+}
+
+.camera-capture__dropzone:hover,
+.camera-capture__dropzone--active {
+  border-color: var(--color-gold);
+  background: rgba(212, 168, 67, 0.05);
+  box-shadow: inset 0 0 30px rgba(212, 168, 67, 0.05);
+}
+
+.camera-capture__dropzone-icon {
+  font-size: 3rem;
+  opacity: 0.6;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+.camera-capture__dropzone:hover .camera-capture__dropzone-icon {
+  transform: scale(1.1);
+  opacity: 0.9;
+}
+
+.camera-capture__dropzone-text {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.camera-capture__dropzone-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.camera-capture__preview {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+}
+
+.camera-capture__preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-md);
+}
+
+.camera-capture__preview-overlay {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+}
+
+.camera-capture__remove-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: rgba(231, 76, 60, 0.8);
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+  backdrop-filter: blur(10px);
+}
+
+.camera-capture__remove-btn:hover {
+  background: var(--color-error);
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 0.85rem 1.8rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, var(--color-gold), #b8941f);
+  color: #0a0a0f;
+  box-shadow: 0 4px 15px rgba(212, 168, 67, 0.3);
+}
+
+.btn--primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(212, 168, 67, 0.45);
+}
+
+.btn--primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn--secondary {
+  background: var(--color-bg-glass);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn--secondary:hover {
+  background: var(--color-bg-glass-hover);
+  border-color: var(--color-border-hover);
+}
+
+.btn--full {
+  width: 100%;
+}
+
+.btn__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Loading Overlay ── */
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-2xl) var(--space-xl);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.loading-overlay__orb {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+    var(--color-purple-light),
+    var(--color-purple),
+    var(--color-gold)
+  );
+  box-shadow: var(--shadow-purple-glow), var(--shadow-glow);
+  animation: pulse 2s ease-in-out infinite, float 3s ease-in-out infinite;
+}
+
+.loading-overlay__text {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+.loading-overlay__step {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* ── Card Result ── */
+.card-result {
+  animation: slideUp 0.6s ease-out;
+  width: 100%;
+  max-width: 480px;
+}
+
+.card-result__image-wrapper {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.card-result__image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform var(--transition-slow);
+}
+
+.card-result__image-wrapper:hover .card-result__image {
+  transform: scale(1.02);
+}
+
+.card-result__rarity-badge {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(10px);
+}
+
+.card-result__rarity-badge--common { background: rgba(200,200,200,0.3); color: #e0e0e0; }
+.card-result__rarity-badge--uncommon { background: rgba(192,192,192,0.3); color: #c0c0c0; }
+.card-result__rarity-badge--rare { background: rgba(212,168,67,0.3); color: var(--color-gold-light); }
+.card-result__rarity-badge--mythic { background: rgba(231,76,60,0.3); color: #ff7675; }
+
+.card-result__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.card-result__name-en {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.card-result__name-pt {
+  font-size: 1.1rem;
+  color: var(--color-gold);
+  font-weight: 500;
+  margin-top: -0.5rem;
+}
+
+.card-result__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.card-result__meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  background: var(--color-bg-glass);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.card-result__section {
+  padding: var(--space-md);
+  background: var(--color-bg-glass);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.card-result__section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.card-result__oracle-text {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+}
+
+.card-result__oracle-text--pt {
+  color: var(--color-gold);
+}
+
+.card-result__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-purple-light);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color var(--transition-fast);
+}
+
+.card-result__link:hover {
+  color: var(--color-gold-light);
+}
+
+/* ── Error Message ── */
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+  border-radius: var(--radius-md);
+  color: #ff7675;
+  font-size: 0.9rem;
+  animation: shake 0.4s ease-out;
+}
+
+.error-message__icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ── Not Identified Message ── */
+.not-identified {
+  text-align: center;
+  padding: var(--space-xl);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.not-identified__icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-md);
+  opacity: 0.6;
+}
+
+.not-identified__title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.not-identified__message {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Footer ── */
+.app-footer {
+  margin-top: auto;
+  padding: var(--space-xl) 0 var(--space-md);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.app-footer a {
+  color: var(--color-purple-light);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  color: var(--color-gold);
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .app {
+    padding: var(--space-md);
+  }
+
+  .app-header__title {
+    font-size: 1.5rem;
+  }
+
+  .app-header__icon img {
+    max-width: 250px !important;
+  }
+
+  .glass-card {
+    padding: var(--space-lg);
+  }
+
+  .card-result__name-en {
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-header__title {
+    font-size: 2.5rem;
+  }
+
+  .glass-card {
+    padding: var(--space-2xl);
+  }
+}
