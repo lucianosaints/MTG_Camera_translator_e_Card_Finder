@@ -97,7 +97,7 @@ class TestValidateImageFile(TestCase):
         f = self._make_jpeg(size=1_500_000)
         with self.assertRaises(ValidationError) as ctx:
             validate_image_file(f)
-        error_msg = str(ctx.exception.detail['image'][0])
+        error_msg = str(ctx.exception.detail['image'])
         self.assertIn('excede', error_msg.lower())
 
     @override_settings(MAX_UPLOAD_SIZE_MB=5)
@@ -115,7 +115,7 @@ class TestValidateImageFile(TestCase):
         f = SimpleUploadedFile('test.gif', content, content_type='image/gif')
         with self.assertRaises(ValidationError) as ctx:
             validate_image_file(f)
-        error_msg = str(ctx.exception.detail['image'][0])
+        error_msg = str(ctx.exception.detail['image'])
         self.assertIn('.gif', error_msg)
 
     def test_exe_extension_raises(self):
@@ -162,7 +162,7 @@ class TestValidateImageFile(TestCase):
         f = SimpleUploadedFile('fake.jpg', content, content_type='image/jpeg')
         with self.assertRaises(ValidationError) as ctx:
             validate_image_file(f)
-        error_msg = str(ctx.exception.detail['image'][0])
+        error_msg = str(ctx.exception.detail['image'])
         self.assertIn('imagem', error_msg.lower())
 
     def test_pdf_masquerading_as_png_raises(self):

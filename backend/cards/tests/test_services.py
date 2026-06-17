@@ -292,7 +292,7 @@ class TestScryfallService(TestCase):
         result = service.search_card('Lightning Bolt')
 
         self.assertEqual(result['name_en'], 'Lightning Bolt')
-        self.assertEqual(result['name_pt'], '')  # Sem tradução
+        self.assertEqual(result['name_pt'], 'Lightning Bolt')  # Fallback usa o nome original
         self.assertEqual(result['oracle_text_pt'], '')
 
     @patch('cards.services.scryfall_service.requests.get')

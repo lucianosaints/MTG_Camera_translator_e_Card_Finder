@@ -64,7 +64,7 @@ class VisionService:
 
     def __init__(self):
         self.api_key: str = settings.OPENROUTER_API_KEY
-        self.model: str = settings.OPENROUTER_MODEL
+        self.model: str = 'openrouter/free'  # Forçando modelo gratuito para evitar custos
 
         if not self.api_key:
             logger.error('OPENROUTER_API_KEY não configurada no .env')
