@@ -218,21 +218,20 @@ class VisionService:
             'model': self.model,
             'messages': [
                 {
-                    'role': 'system',
-                    'content': (
-                        "Você é um tradutor especializado no jogo Magic: The Gathering. "
-                        "Sua tarefa é traduzir o texto de regras (Oracle Text) do inglês para o "
-                        "português do Brasil, utilizando a terminologia oficial do jogo "
-                        "(ex: 'Haste' -> 'Ímpeto', 'Trample' -> 'Atropelar', 'Graveyard' -> 'Cemitério'). "
-                        "Responda APENAS com a tradução, sem adicionar aspas, comentários ou explicações."
-                    )
-                },
-                {
                     'role': 'user',
-                    'content': text
+                    'content': (
+                        "Translate the following Magic: The Gathering Oracle text into Portuguese (Brazil) "
+                        "using official game terminology (e.g. 'Haste' -> 'Ímpeto', 'Trample' -> 'Atropelar', 'Graveyard' -> 'Cemitério').\n\n"
+                        "CRITICAL INSTRUCTIONS:\n"
+                        "- Respond ONLY with the final Portuguese translation.\n"
+                        "- DO NOT repeat the original text.\n"
+                        "- DO NOT add any prefixes, quotes, explanations, or comments.\n"
+                        "- DO NOT write 'Translation:' or 'Original:'.\n\n"
+                        f"Text to translate:\n{text}"
+                    )
                 }
             ],
-            'max_tokens': 500,
+            'max_tokens': 600,
             'temperature': 0.1,
         }
 
