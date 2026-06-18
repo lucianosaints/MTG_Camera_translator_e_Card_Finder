@@ -16,6 +16,9 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 from .models import CardScan
 from .serializers import CardIdentifyRequestSerializer
@@ -57,6 +60,7 @@ class CardIdentifyView(APIView):
 
     parser_classes = [MultiPartParser]
     throttle_classes = [CardIdentifyThrottle, CardIdentifyBurstThrottle]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         """
@@ -97,6 +101,27 @@ class CardIdentifyView(APIView):
         serializer.is_valid(raise_exception=True)
 
         uploaded_file = serializer.validated_data['image']
+
+        # ── 1.5. Validar limites da conta (Freemium) ──
+        user = request.user
+        if hasattr(user, 'profile') and not user.profile.is_premium:
+            profile = user.profile
+            hoje = now().date()
+            if profile.last_scan_date != hoje:
+                profile.scans_today = 0
+                profile.last_scan_date = hoje
+                
+            if profile.scans_today >= 10:
+                logger.warning('Usuário free %s atingiu o limite de scans.', user.username)
+                return Response(
+                    {'error': 'LIMIT_REACHED'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        # Incrementar uso
+        if hasattr(user, 'profile') and not user.profile.is_premium:
+            user.profile.scans_today += 1
+            user.profile.save()
 
         # ── 2. Validação de segurança aprofundada ──
         validate_image_file(uploaded_file)
@@ -254,4 +279,44 @@ class CardIdentifyView(APIView):
                 'card': card_data,
             },
             status=status.HTTP_200_OK,
+        )
+
+
+class RegisterView(APIView):
+    """
+    POST /api/v1/register/
+    Permite o cadastro de novos usuários. O UserProfile será criado automaticamente por signals.
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        
+        if not username or not password:
+            return Response(
+                {'error': 'Username and password are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {'error': 'Username already exists'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Cria o usuário. O signal (post_save) criará o UserProfile.
+        user = User.objects.create_user(username=username, email=email, password=password)
+        
+        return Response(
+            {
+                'success': True, 
+                'message': 'User created successfully',
+                'user': {
+                    'username': user.username,
+                    'email': user.email
+                }
+            }, 
+            status=status.HTTP_201_CREATED
         )

@@ -5,3 +5,6 @@ class CardsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'cards'
     verbose_name = 'MTG Card Scanner'
+
+    def ready(self):
+        import cards.signals

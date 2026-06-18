@@ -72,11 +72,37 @@ export default function CameraCapture({ onCapture, disabled }) {
   const takeWebcamPhoto = () => {
     if (!videoRef.current) return;
     
+    const video = videoRef.current;
+    const vw = video.videoWidth || 640;
+    const vh = video.videoHeight || 480;
+    
+    // Proporção alvo: 2.5 / 3.5 (Retrato/Carta)
+    const targetAspect = 2.5 / 3.5;
+    const videoAspect = vw / vh;
+    
+    let drawWidth = vw;
+    let drawHeight = vh;
+    let startX = 0;
+    let startY = 0;
+
+    if (videoAspect > targetAspect) {
+      // Vídeo é mais "largo" que a carta (ex: Webcam de PC). Cortar laterais.
+      drawWidth = vh * targetAspect;
+      startX = (vw - drawWidth) / 2;
+    } else {
+      // Vídeo é mais "alto" que a carta. Cortar topo/base.
+      drawHeight = vw / targetAspect;
+      startY = (vh - drawHeight) / 2;
+    }
+
     const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth || 640;
-    canvas.height = videoRef.current.videoHeight || 480;
+    canvas.width = drawWidth;
+    canvas.height = drawHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    
+    // Cortar a parte central equivalente à carta
+    ctx.drawImage(video, startX, startY, drawWidth, drawHeight, 0, 0, drawWidth, drawHeight);
+    
     
     canvas.toBlob((blob) => {
       if (!blob) return;
@@ -167,12 +193,19 @@ export default function CameraCapture({ onCapture, disabled }) {
 
       {isWebcamActive ? (
         /* Modo Câmera ao Vivo (WebRTC) */
-        <div className="camera-capture__preview" style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="camera-capture__preview" style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <video 
             ref={videoRef} 
             autoPlay 
             playsInline 
-            style={{ width: '100%', maxHeight: '300px', objectFit: 'cover' }}
+            style={{ 
+              width: '100%', 
+              maxWidth: '300px', 
+              aspectRatio: '2.5/3.5', 
+              objectFit: 'cover',
+              borderRadius: '8px',
+              marginTop: '1rem'
+            }}
           />
           <div style={{ display: 'flex', gap: '10px', padding: '10px', background: 'rgba(0,0,0,0.8)' }}>
             <button className="btn btn--primary" onClick={takeWebcamPhoto} style={{ flex: 2, padding: '10px' }}>

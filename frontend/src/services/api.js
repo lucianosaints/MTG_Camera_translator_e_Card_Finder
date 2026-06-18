@@ -20,8 +20,18 @@ export async function identifyCard(imageFile) {
   formData.append('image', imageFile);
 
   try {
+    const token = localStorage.getItem('access_token');
+    const headers = {
+      'Accept': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/cards/identify/`, {
       method: 'POST',
+      headers: headers,
       body: formData,
       // Não definir Content-Type — o browser seta automaticamente
       // com o boundary correto para multipart/form-data
@@ -32,7 +42,7 @@ export async function identifyCard(imageFile) {
     // Erro HTTP (4xx, 5xx)
     if (!response.ok) {
       const errorMessage =
-        data?.error?.message ||
+        (typeof data?.error === 'string' ? data.error : data?.error?.message) ||
         data?.detail ||
         'Erro desconhecido ao processar a imagem.';
       throw new Error(errorMessage);

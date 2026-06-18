@@ -1,6 +1,11 @@
 from django.contrib import admin
-from .models import CardScan
+from .models import CardScan, UserProfile
 
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'is_premium', 'scans_today', 'last_scan_date']
+    list_filter = ['is_premium', 'last_scan_date']
+    search_fields = ['user__username', 'user__email']
 
 @admin.register(CardScan)
 class CardScanAdmin(admin.ModelAdmin):

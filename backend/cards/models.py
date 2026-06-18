@@ -5,6 +5,42 @@ CardScan: Registra cada scan realizado pelo usuário para auditoria
 e análise de uso do sistema.
 """
 from django.db import models
+from django.contrib.auth.models import User
+
+
+class UserProfile(models.Model):
+    """
+    Perfil estendido do usuário para a arquitetura Freemium.
+    Controla status de premium e limites diários de uso da IA.
+    """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile',
+        verbose_name='Usuário'
+    )
+    is_premium = models.BooleanField(
+        default=False,
+        verbose_name='Premium?',
+        help_text='Se verdadeiro, ignora limite diário de scans'
+    )
+    scans_today = models.IntegerField(
+        default=0,
+        verbose_name='Scans Hoje',
+        help_text='Quantidade de cartas identificadas hoje'
+    )
+    last_scan_date = models.DateField(
+        auto_now_add=True,
+        verbose_name='Data do Último Scan'
+    )
+
+    class Meta:
+        verbose_name = 'Perfil de Usuário'
+        verbose_name_plural = 'Perfis de Usuários'
+
+    def __str__(self) -> str:
+        status = "Premium" if self.is_premium else f"Free ({self.scans_today}/10)"
+        return f'{self.user.username} - {status}'
 
 
 class CardScan(models.Model):

@@ -8,6 +8,7 @@ Segurança por Design:
 - Logging estruturado para arquivo
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Terceiros
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     # Apps do projeto
     'cards',
@@ -125,6 +127,9 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE_MB * 1024 * 1024
 # DJANGO REST FRAMEWORK
 # ============================================
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
@@ -138,6 +143,12 @@ REST_FRAMEWORK = {
         'card_identify_burst': os.getenv('IDENTIFY_BURST_LIMIT', '3/sec'),
     },
     'EXCEPTION_HANDLER': 'cards.exceptions.custom_exception_handler',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # ============================================
