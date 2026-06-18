@@ -41,4 +41,4 @@ USER django
 EXPOSE 8000
 
 # Executa a aplicação usando o Gunicorn em vez do servidor de desenvolvimento
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "mtg_translator.wsgi:application"]
+CMD sh -c "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 --workers 3 mtg_translator.wsgi:application"

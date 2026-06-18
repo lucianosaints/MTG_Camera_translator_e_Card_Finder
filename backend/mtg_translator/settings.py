@@ -7,6 +7,7 @@ Segurança por Design:
 - Uploads limitados a 5MB
 - Logging estruturado para arquivo
 """
+import dj_database_url
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -23,6 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'INSECURE-change-me-in-production')
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['mtg-translator-api.fly.dev', 'localhost', '127.0.0.1']
+
 if 'testserver' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('testserver')
 
@@ -49,6 +52,7 @@ INSTALLED_APPS = [
 # ============================================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,7 +67,7 @@ ROOT_URLCONF = 'mtg_translator.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR.parent / 'frontend' / 'dist'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,11 +85,12 @@ WSGI_APPLICATION = 'mtg_translator.wsgi.application'
 # ============================================
 # BANCO DE DADOS
 # ============================================
+db_path = os.getenv('DATABASE_PATH')
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
 
 # ============================================
@@ -111,6 +116,13 @@ USE_TZ = True
 # ============================================
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Pasta do build do React
+STATICFILES_DIRS = []
+
+# Whitenoise Root: Serve os arquivos gerados pelo Vite (assets, favicon, index.html) diretamente na raiz
+WHITENOISE_ROOT = BASE_DIR.parent / 'frontend' / 'dist'
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -152,14 +164,12 @@ SIMPLE_JWT = {
 }
 
 # ============================================
-# CORS (desenvolvimento)
+# CORS (desenvolvimento e produção)
 # ============================================
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-]
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() in ('true', '1', 'yes')
+
+if not CORS_ALLOW_ALL_ORIGINS:
+    CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'https://mtg-translator-api.fly.dev,http://localhost:5173,http://127.0.0.1:5173,https://mtg-camera-translator.fly.dev').split(',')
 
 # ============================================
 # APIs EXTERNAS (carregadas de .env)
@@ -208,11 +218,12 @@ LOGGING = {
 
 # Criar diretório de logs se não existir
 (BASE_DIR / 'logs').mkdir(exist_ok=True)
+import os
 
-# Trigger reload
+# Informa ao Django onde estão os arquivos empacotados do React (agora dentro do backend)
+REACT_APP_DIR = BASE_DIR / 'dist'
 
-# Trigger reload 2
-
-# Trigger reload 3
-
-# Trigger reload 4
+# Adiciona a pasta aos locais onde o Django procura arquivos estáticos
+STATICFILES_DIRS = [
+    REACT_APP_DIR,
+]
