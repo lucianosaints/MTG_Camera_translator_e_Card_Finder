@@ -29,6 +29,11 @@ ALLOWED_HOSTS = ['mtg-translator-api.fly.dev', 'localhost', '127.0.0.1']
 if 'testserver' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('testserver')
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://mtg-translator-api.fly.dev",
+]
+
+
 # ============================================
 # APLICAÇÕES INSTALADAS
 # ============================================
@@ -67,7 +72,7 @@ ROOT_URLCONF = 'mtg_translator.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.parent / 'frontend' / 'dist'],
+        'DIRS': [BASE_DIR / 'dist'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,13 +90,22 @@ WSGI_APPLICATION = 'mtg_translator.wsgi.application'
 # ============================================
 # BANCO DE DADOS
 # ============================================
-db_path = os.getenv('DATABASE_PATH')
-DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
-        conn_max_age=600
-    )
-}
+if os.getenv('FLY_APP_NAME'):
+    # Se estiver rodando na nuvem do Fly.io, força o banco pro volume persistente
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/data/db.sqlite3',
+        }
+    }
+else:
+    # Se estiver rodando no computador local do desenvolvedor
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ============================================
 # VALIDAÇÃO DE SENHAS
@@ -121,7 +135,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = []
 
 # Whitenoise Root: Serve os arquivos gerados pelo Vite (assets, favicon, index.html) diretamente na raiz
-WHITENOISE_ROOT = BASE_DIR.parent / 'frontend' / 'dist'
+WHITENOISE_ROOT = BASE_DIR / 'dist'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'

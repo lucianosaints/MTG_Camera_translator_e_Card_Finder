@@ -25,7 +25,6 @@ import { useNavigate } from 'react-router-dom';
 import icones from '../imagem/icones.png';
 import logoImg from '../imagem/logo.svg.png';
 import instaIcon from '../imagem/instagran.png';
-import DownloadApp from '../components/DownloadApp';
 
 export default function Home() {
   const { username, logout } = useAuth();
@@ -219,9 +218,6 @@ export default function Home() {
           </div>
         )}
       </main>
-
-      {/* Componente de Download (Native App) */}
-      <DownloadApp />
 
       {/* Footer */}
       <footer className="app-header__subtitle" style={{ marginTop: 'auto', padding: '2rem 0 1rem', textAlign: 'center', fontSize: '0.85rem' }}>

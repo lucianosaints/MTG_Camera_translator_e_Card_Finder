@@ -16,8 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Cria um usuário não-root (prática de segurança essencial)
-RUN addgroup --system django && adduser --system --ingroup django django
+# Comentado para evitar problemas de permissões em volumes montados
+# RUN addgroup --system django && adduser --system --ingroup django django
 
 # Copia e instala as dependências Python
 COPY requirements.txt /app/
@@ -26,11 +26,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia o código-fonte da aplicação
 COPY . /app/
 
-# Dá permissões aos arquivos para o usuário não-root
-RUN chown -R django:django /app
-
-# Muda para o usuário não-root criado
-USER django
+# Removemos a restrição de usuário para que o sistema tenha permissão total sobre o volume /data
+# RUN chown -R django:django /app
+# USER django
 
 # Coleta arquivos estáticos (útil se estiver rodando com WhiteNoise)
 # (Pode falhar se o settings.py depender de variáveis de ambiente não setadas aqui,

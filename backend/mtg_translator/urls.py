@@ -56,5 +56,8 @@ def render_react(request):
 # 1. Via expressa para os arquivos visuais (CSS/JS) do React passarem direto
 urlpatterns.append(re_path(r'^assets/(?P<path>.*)$', serve, {'document_root': settings.BASE_DIR / 'dist' / 'assets'}))
 
-# 2. O Leão de Chácara (Catch-all) para o index.html - TEM QUE FICAR POR ÚLTIMO!
+# 2. Via expressa para os arquivos do PWA (Service Worker, Manifest) na raiz do dist
+urlpatterns.append(re_path(r'^(?P<path>(manifest\.webmanifest|sw\.js|registerSW\.js|workbox-.*\.js|icones\.png))$', serve, {'document_root': settings.BASE_DIR / 'dist'}))
+
+# 3. O Leão de Chácara (Catch-all) para o index.html - TEM QUE FICAR POR ÚLTIMO!
 urlpatterns.append(re_path(r'^.*$', render_react, name='react_frontend'))

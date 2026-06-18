@@ -31,7 +31,7 @@ export default function Login() {
       <div className="glass-card" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <img src={logoImg} alt="Logo" style={{ width: '200px', maxWidth: '100%' }} />
-          <h2 style={{ marginTop: '1rem', color: 'var(--color-gold)', fontWeight: 600 }}>Entrar no Scanner</h2>
+          <h2 style={{ marginTop: '1rem', color: 'var(--color-gold)', fontWeight: 600 }}>TRADUTOR CARDS</h2>
         </div>
 
         {error && (
